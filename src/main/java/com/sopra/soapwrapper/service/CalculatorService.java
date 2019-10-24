@@ -24,6 +24,4 @@ public class CalculatorService {
   public int divide(int numberA, int  numberB) {
     return soapClient.divide(numberA, numberB).getDivideResult();
   }
-
-
 }
