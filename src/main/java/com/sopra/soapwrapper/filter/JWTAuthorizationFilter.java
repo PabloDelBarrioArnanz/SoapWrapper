@@ -2,6 +2,7 @@ package com.sopra.soapwrapper.filter;
 
 import com.auth0.jwk.*;
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.spring.security.api.authentication.PreAuthenticatedAuthenticationJsonWebToken;
@@ -22,11 +23,14 @@ import static com.sopra.soapwrapper.configuration.SecurityConstants.TOKEN_PREFIX
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
-
-  public JWTAuthorizationFilter(AuthenticationManager authManager) {
+  
+  private final String issuerDomain;
+  
+  public JWTAuthorizationFilter(AuthenticationManager authManager, String issuerDomain) {
     super(authManager);
+    this.issuerDomain = issuerDomain;
   }
-
+  
   @Override
   protected void doFilterInternal(HttpServletRequest req,
                                   HttpServletResponse res,
@@ -35,32 +39,44 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
       .filter(header -> header.startsWith(TOKEN_PREFIX))
       .map(token -> token.replace(TOKEN_PREFIX, ""))
       .ifPresent(this::authenticateWithToken);
-
     chain.doFilter(req, res);
   }
-
-  private void authenticateWithToken(String token) {
-    Algorithm algorithm = getAlgorithm(token);
+  
+  private void authenticateWithToken(@NotNull String token) {
+    JWTVerifier jwtVerifier = buildJWTVerifier(token);
     Optional.ofNullable(PreAuthenticatedAuthenticationJsonWebToken.usingToken(token))
-      .map(preAuth -> preAuth.verify(JWT.require(algorithm).build()))
+      .map(preAuth -> preAuth.verify(jwtVerifier))
       .ifPresent(getContext()::setAuthentication);
   }
-
+  
+  private JWTVerifier buildJWTVerifier(@NotNull String token) {
+    return JWT.require(getAlgorithm(token)).build();
+  }
+  
   private Algorithm getAlgorithm(@NotNull String token) {
-    DecodedJWT jwt = JWT.decode(token);
-    JwkProvider provider = new UrlJwkProvider("https://dev-5u3jw31d.auth0.com/");
-    Jwk jwk = null;
+    return Optional.ofNullable(buildJwk(token))
+      .map(this::getPublicKeyFromJwk)
+      .map(publicKey -> Algorithm.RSA256(publicKey, null))
+      .get();
+  }
+  
+  private RSAPublicKey getPublicKeyFromJwk(Jwk jwk) {
     try {
-      jwk = provider.get(jwt.getKeyId());
-    } catch (JwkException e) {
-      e.printStackTrace();
-    }
-    Algorithm algorithm = null;
-    try {
-      algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
+      return (RSAPublicKey) jwk.getPublicKey();
     } catch (InvalidPublicKeyException e) {
       e.printStackTrace();
+      return null;
     }
-    return algorithm;
+  }
+  
+  private Jwk buildJwk(@NotNull String token) {
+    DecodedJWT jwt = JWT.decode(token);
+    JwkProvider provider = new UrlJwkProvider(issuerDomain);
+    try {
+      return provider.get(jwt.getKeyId());
+    } catch (JwkException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 }

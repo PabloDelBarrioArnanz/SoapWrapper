@@ -30,6 +30,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .anyRequest()
       .authenticated()
       .and()
-      .addFilter(new JWTAuthorizationFilter(authenticationManager()));
+      .addFilter(new JWTAuthorizationFilter(authenticationManager(), issuer));
   }
 }
