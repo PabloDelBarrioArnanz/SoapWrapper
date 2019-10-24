@@ -4,8 +4,8 @@ import com.auth0.jwk.*;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.spring.security.api.authentication.PreAuthenticatedAuthenticationJsonWebToken;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
 import java.util.Optional;
 
 import static com.sopra.soapwrapper.configuration.SecurityConstants.HEADER_KEY;
@@ -41,21 +40,10 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
   }
 
   private void authenticateWithToken(String token) {
-    Optional.ofNullable(getAuthentication(token))
-      .ifPresent(getContext()::setAuthentication);
-  }
-
-  private UsernamePasswordAuthenticationToken getAuthentication(@NotNull String token) {
     Algorithm algorithm = getAlgorithm(token);
-
-    // parse the token.
-    String user = JWT.require(algorithm).build().verify(token).getSubject();
-
-    if (user != null) {
-      return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
-    }
-    return null;
-
+    Optional.ofNullable(PreAuthenticatedAuthenticationJsonWebToken.usingToken(token))
+      .map(preAuth -> preAuth.verify(JWT.require(algorithm).build()))
+      .ifPresent(getContext()::setAuthentication);
   }
 
   private Algorithm getAlgorithm(@NotNull String token) {
