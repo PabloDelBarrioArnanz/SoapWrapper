@@ -52,7 +52,7 @@ public class SoapRequestTest {
     );
 
     mockWebServiceServer.expect(payload(requestPayload)).andRespond(withPayload(responsePayload));
-    Assert.assertEquals(calculatorController.add(1, 2).getBody().intValue(), 3);
+    assertEquals(calculatorController.add(1, 2).getBody(), 3);
     mockWebServiceServer.verify();
   }
 
@@ -73,7 +73,7 @@ public class SoapRequestTest {
     );
 
     mockWebServiceServer.expect(payload(requestPayload)).andRespond(withPayload(responsePayload));
-    Assert.assertEquals(calculatorController.multiply(1, 2).getBody().intValue(), 2);
+    assertEquals(calculatorController.multiply(1, 2).getBody(), 2);
     mockWebServiceServer.verify();
   }
 
@@ -94,7 +94,7 @@ public class SoapRequestTest {
     );
 
     mockWebServiceServer.expect(payload(requestPayload)).andRespond(withPayload(responsePayload));
-    Assert.assertEquals(calculatorController.subtract(2, 1).getBody().intValue(), 1);
+    assertEquals(calculatorController.subtract(2, 1).getBody(), 1);
     mockWebServiceServer.verify();
   }
 
@@ -115,7 +115,7 @@ public class SoapRequestTest {
     );
 
     mockWebServiceServer.expect(payload(requestPayload)).andRespond(withPayload(responsePayload));
-    Assert.assertEquals(calculatorController.divide(2, 1).getBody().intValue(), 2);
+    assertEquals(calculatorController.divide(2, 1).getBody(), 2);
     mockWebServiceServer.verify();
   }
 
@@ -136,7 +136,7 @@ public class SoapRequestTest {
     );
 
     mockWebServiceServer.expect(payload(requestBadPayload)).andRespond(withPayload(responsePayload));
-    assertEquals(calculatorController.add(1, 2).getBody().intValue(), 3);
+    assertEquals(calculatorController.add(1, 2).getBody(), 3);
     mockWebServiceServer.verify();
   }
 
@@ -157,7 +157,7 @@ public class SoapRequestTest {
     );
 
     mockWebServiceServer.expect(payload(requestBadPayload)).andRespond(withPayload(responsePayload));
-    assertEquals(calculatorController.subtract(1, 2).getBody().intValue(), 3);
+    assertEquals(calculatorController.subtract(1, 2).getBody(), 3);
     mockWebServiceServer.verify();
   }
 
@@ -178,7 +178,7 @@ public class SoapRequestTest {
     );
 
     mockWebServiceServer.expect(payload(requestBadPayload)).andRespond(withPayload(responsePayload));
-    assertEquals(calculatorController.multiply(1, 2).getBody().intValue(), 3);
+    assertEquals(calculatorController.multiply(1, 2).getBody(), 3);
     mockWebServiceServer.verify();
   }
 
@@ -199,7 +199,7 @@ public class SoapRequestTest {
     );
 
     mockWebServiceServer.expect(payload(requestBadPayload)).andRespond(withPayload(responsePayload));
-    assertEquals(calculatorController.divide(1, 2).getBody().intValue(), 3);
+    assertEquals(calculatorController.divide(1, 2).getBody(), 3);
     mockWebServiceServer.verify();
   }
 }
