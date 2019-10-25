@@ -3,8 +3,8 @@ package com.sopra.soapwrapper.category;
 public enum SOAPActionEndpoint {
   ADD("http://tempuri.org/Add"),
   SUBTRACT("http://tempuri.org/Subtract"),
-  DIVIDE("http://tempuri.org/Multiply"),
-  MULTIPLY("http://tempuri.org/Divide");
+  DIVIDE("http://tempuri.org/Divide"),
+  MULTIPLY("http://tempuri.org/Multiply");
   private String value;
 
   SOAPActionEndpoint(String value) {
