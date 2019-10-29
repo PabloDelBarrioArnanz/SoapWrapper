@@ -1,6 +1,5 @@
 package com.sopra.soapwrapper;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
@@ -11,13 +10,16 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RunWith(SpringRunner.class)
@@ -117,25 +119,25 @@ public class SecurityTest {
   @Test
   public void whenTokenIsValid_addOperation_authorizedAccess() {
     ResponseEntity<String> response = getForEntityWithHeaders(buildAddOperationUrl(), getToken());
-    assertThat(response.getStatusCode(), equalTo(UNAUTHORIZED));
+    assertThat(response.getStatusCode(), equalTo(OK));
   }
   
   @Test
   public void whenTokenIsValid_subtractOperation_authorizedAccess() {
     ResponseEntity<String> response = getForEntityWithHeaders(buildSubtractOperationUrl(), getToken());
-    assertThat(response.getStatusCode(), equalTo(UNAUTHORIZED));
+    assertThat(response.getStatusCode(), equalTo(OK));
   }
   
   @Test
   public void whenTokenIsValid_multiplyOperation_authorizedAccess() {
     ResponseEntity<String> response = getForEntityWithHeaders(buildMultiplyOperationUrl(), getToken());
-    assertThat(response.getStatusCode(), equalTo(UNAUTHORIZED));
+    assertThat(response.getStatusCode(), equalTo(OK));
   }
   
   @Test
   public void whenTokenIsValid_divideOperation_authorizedAccess() {
     ResponseEntity<String> response = getForEntityWithHeaders(buildDivideOperationUrl(), getToken());
-    assertThat(response.getStatusCode(), equalTo(UNAUTHORIZED));
+    assertThat(response.getStatusCode(), equalTo(OK));
   }
   
   private String buildAddOperationUrl() {
@@ -155,7 +157,7 @@ public class SecurityTest {
   }
   
   private ResponseEntity<String> getForEntityWithHeaders(String url, String token) {
-    return testRestTemplate.getForEntity(url, String.class, buildAuthorizationHeader(token));
+    return testRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(buildAuthorizationHeader(token)), String.class);
   }
   
   private HttpHeaders buildAuthorizationHeader(String token) {
@@ -175,25 +177,6 @@ public class SecurityTest {
     } catch (UnirestException | JsonProcessingException e) {
       e.printStackTrace();
       return EXPIRED_TOKEN;
-    }
-  }
-  
-  private class TokenParser {
-    
-    @JsonProperty("access_token") private String accessToken;
-    @JsonProperty("expires_in") private long expiresIn;
-    @JsonProperty("token_type") private String tokenType;
-    
-    public String getAccessToken() {
-      return accessToken;
-    }
-    
-    public long getExpiresIn() {
-      return expiresIn;
-    }
-    
-    public String getTokenType() {
-      return tokenType;
     }
   }
 }
